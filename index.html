@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SHAPES | HACKCLUB YSWS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@200..900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Mansalva&display=swap" rel="stylesheet">
+<style>
+html,body{
+width:100%;
+height:100%;
+margin:0;
+overflow:hidden;
+background:#ff0000;
+}
+canvas{
+display:block;
+}
+.mansalva-regular {
+  font-family: "Mansalva", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/p5.min.js"></script>
+</head>
+<body>
+<script>
+let shapes;
+let orph;
+let showGuide=false;
+let guideScroll=0;
+let guideContentHeight=0;
+let guideLayout=[];
+let guideLayoutWidth=0;
+let homeScroll=0;
+let homeContentHeight=0;
+let draggingScrollbar=false;
+let scrollbarDragOffset=0;
+let previewBallX=0;
+let previewBallY=0;
+let previewSpeedX=2.4;
+let previewSpeedY=1.8;
+let previewBallColor;
+
+const guideText=`What is p5.js?
+____________________________________________
+please note that this is NOT A GUIDE, and is just showing the functions.
+
+p5.js is a JavaScript library that makes creative coding more efficient and fun.
+It gives you ready-to-use functions for drawing, animation, sound, interaction, and more.
+Here are useful functions to get started! :D
+____________________________________________
+Structure
+____________________________________________
+setup() runs once when your sketch starts. Use it to create the canvas and set things up.
+draw() runs repeatedly while your sketch is active. Put animation and code that needs to update here.
+preload() loads assets, such as images and fonts, before setup() runs.
+
+____________________________________________
+Canvas and dimensions
+____________________________________________
+createCanvas(width, height) creates the drawing area using the size you provide.
+resizeCanvas(width, height) changes the canvas dimensions.
+background(color) paints the canvas background. Calling it in draw() clears the previous frame.
+width and height give the current canvas dimensions.
+windowWidth and windowHeight give the browser window dimensions.
+frameRate(number) sets the target number of frames drawn per second.
+frameCount tells you how many frames have been drawn since the sketch started.
+
+____________________________________________
+Shapes and lines
+____________________________________________
+point(x, y) draws a point at a position.
+line(x1, y1, x2, y2) draws a line between two points.
+circle(x, y, diameter) draws a circle at a position.
+ellipse(x, y, width, height) draws an oval or circle.
+rect(x, y, width, height) draws a rectangle; equal width and height make a square.
+square(x, y, size) draws a square.
+triangle(x1, y1, x2, y2, x3, y3) draws a triangle using three points.
+quad() draws a four-sided shape using four points.
+arc() draws part of an ellipse.
+
+____________________________________________
+Color and outlines
+____________________________________________
+fill(color) sets the color inside shapes and text.
+noFill() makes shapes transparent inside.
+stroke(color) sets the outline and line color.
+noStroke() turns outlines off.
+strokeWeight(number) sets the outline thickness.
+color() creates a color value you can save and reuse.
+
+____________________________________________
+Text and images
+____________________________________________
+text(string, x, y) draws text at a position.
+textSize(number) sets the text size.
+textAlign(horizontal, vertical) sets how text lines up around its position.
+textFont(font) chooses the font used for text.
+loadImage(path) loads an image, usually in preload().
+image(image, x, y, width, height) draws an image on the canvas.
+
+____________________________________________
+Mouse and keyboard
+____________________________________________
+mouseX and mouseY give the mouse position on the canvas.
+pmouseX and pmouseY give the mouse position from the previous frame.
+mouseIsPressed is true while a mouse button is held down.
+mousePressed() runs when a mouse button is pressed.
+mouseReleased() runs when a mouse button is released.
+mouseMoved() runs when the mouse moves without a button held down.
+mouseDragged() runs when the mouse moves while a button is held down.
+key tells you which key was most recently pressed.
+keyIsDown(keyCode) checks whether a specific key is being held down.
+keyPressed() runs when a key is pressed; keyReleased() runs when it is released.
+
+____________________________________________
+Math and randomness
+____________________________________________
+random() generates a random number. Add a maximum or a minimum and maximum to choose a range.
+randomSeed(number) makes random results repeatable from the same starting number.
+map(value, start1, stop1, start2, stop2) converts a value from one range to another.
+constrain(value, min, max) keeps a value within a minimum and maximum.
+dist(x1, y1, x2, y2) finds the distance between two points.
+lerp(start, stop, amount) finds a point between two numbers.
+
+____________________________________________
+Advanced
+____________________________________________
+push() saves the current drawing styles and transformations; pop() restores them.
+translate(x, y) moves the drawing origin to a new position.
+rotate(angle) rotates what you draw. Angles use radians by default.
+scale(amount) enlarges or shrinks what you draw.
+beginShape(), vertex(x, y), and endShape() let you build custom shapes from points.
+bezier() draws a curve using control points; curve() draws a smooth curve through points.
+noise(x, y, z) creates smooth, natural-looking values useful for organic motion and textures.
+createVector(x, y) makes a vector for storing and working with directions and positions.
+pixelDensity(number) sets the number of pixels used for each canvas pixel, which can affect sharpness and performance.
+loadPixels() loads the canvas's pixel data so you can inspect or change individual pixels; call updatePixels() to apply your changes.
+saveCanvas() saves your sketch as an image file.
+windowResized() runs when the browser window changes size, so you can resize or adjust your sketch.`;
+
+const exampleLines=[
+"let x = 110;",
+"let y = 80;",
+"let speedX = 2.5;",
+"let speedY = 2;",
+"let ballColor;",
+"",
+"function setup() {",
+"  createCanvas(240, 180);",
+"  ballColor = color(255, 213, 0);",
+"}",
+"",
+"function draw() {",
+"  background(255, 0, 0);",
+"  x += speedX;",
+"  y += speedY;",
+"  if (x > width - 18 || x < 18) {",
+"    speedX *= -1;",
+"  }",
+"  if (y > height - 18 || y < 18) {",
+"    speedY *= -1;",
+"  }",
+"  fill(ballColor);",
+"  circle(x, y, 36);",
+"}",
+"",
+"function mousePressed() {",
+"  ballColor = color(random(255), random(255), random(255));",
+"}"
+];
+
+function setup(){
+const canvas=createCanvas(windowWidth,windowHeight);
+canvas.elt.style.position="fixed";
+canvas.elt.style.left="0";
+canvas.elt.style.top="0";
+textFont("Mansalva");
+imageMode(CENTER);
+previewBallX=120;
+previewBallY=90;
+previewBallColor=color(255,213,0);
+}
+
+function preload(){
+shapes=loadImage("https://i.postimg.cc/6qYbsyBx/shapes-(1).png");
+orph=loadImage("orph.png");
+}
+
+function drawButton(label,x,y,w,h){
+const pointerY=showGuide?mouseY:mouseY+homeScroll;
+const hovered=mouseX>=x-w/2&&mouseX<=x+w/2&&pointerY>=y-h/2&&pointerY<=y+h/2;
+rectMode(CENTER);
+stroke(255);
+strokeWeight(2);
+fill(hovered?255:"#ff1b00");
+rect(x,y,w,h);
+noStroke();
+fill(hovered?"#ff0000":255);
+textFont("Mansalva");
+textSize(15);
+textStyle(NORMAL);
+textAlign(CENTER,CENTER);
+text(label,x,y);
+return hovered;
+}
+
+function wrapText(value,maxWidth,size){
+textSize(size);
+const words=value.split(/\s+/);
+const lines=[];
+let line="";
+for(const word of words){
+const next=line?line+" "+word:word;
+if(line&&textWidth(next)>maxWidth){
+lines.push(line);
+line=word;
+}else{
+line=next;
+}
+}
+if(line)lines.push(line);
+return lines;
+}
+
+function drawBackground(){
+noStroke();
+const tileSize=40;
+for(let x=0;x<width;x+=tileSize){
+for(let y=0;y<height;y+=tileSize){
+fill((Math.floor(x/tileSize)+Math.floor(y/tileSize))%2===0?"#ff0000":"#ff3b00");
+rect(x,y,tileSize,tileSize);
+}
+}
+}
+
+function homeImageWidth(){
+const mobile=width<600;
+return Math.max(0,Math.min(500,width-(mobile?40:60)));
+}
+
+function homeLogoY(){
+return Math.max(homeImageWidth()*11/120+12,Math.min(height*0.28,height-450));
+}
+
+function homeButtonsY(){
+const mobile=width<600;
+return Math.min(
+homeLogoY()+homeImageWidth()*0.12+(mobile?138:150)+50,
+Math.max(height-220,homeLogoY()+homeImageWidth()*0.12+200)
+);
+}
+
+function homeShapesY(){
+return homeButtonsY()+150;
+}
+
+function homeExampleY(){
+return homeShapesY()+100;
+}
+
+function homeExampleHeight(){
+if(width<600)return 55+exampleLines.length*18+24+160+18;
+return Math.max(270,62+exampleLines.length*18+36);
+}
+
+function homeFooterY(){
+return homeExampleY()+homeExampleHeight()+80;
+}
+
+function homePreviewBounds(){
+const panelW=Math.min(800,width-40);
+const panelX=(width-panelW)/2;
+const exampleY=homeExampleY();
+
+if(width<600){
+return {
+x:panelX+16,
+y:exampleY+55+exampleLines.length*18+24,
+w:panelW-32,
+h:160
+};
+}
+
+const codeTop=exampleY+62;
+const codeHeight=exampleLines.length*18;
+const previewHeight=180;
+return {
+x:panelX+panelW*0.62,
+y:codeTop+(codeHeight-previewHeight)/2,
+w:panelW*0.34,
+h:previewHeight
+};
+}
+
+function drawHome(){
+const mobile=width<600;
+const imageWidth=homeImageWidth();
+const logoY=homeLogoY();
+const buttonsY=homeButtonsY();
+const shapesY=homeShapesY();
+const exampleY=homeExampleY();
+const exampleHeight=homeExampleHeight();
+const panelW=Math.min(800,width-40);
+const panelX=(width-panelW)/2;
+const footerY=homeFooterY();
+homeContentHeight=footerY+60;
+homeScroll=constrain(homeScroll,0,Math.max(0,homeContentHeight-height));
+
+push();
+translate(0,-homeScroll);
+
+if(shapes&&shapes.width){
+image(shapes,width/2,logoY,imageWidth,11*imageWidth/60);
+image(orph,100,60,200,100);
+}
+
+fill(255);
+textFont("Mansalva");
+textAlign(CENTER,CENTER);
+textSize(mobile?16:20);
+text("code a creative game with p5.js!",width/2,logoY+imageWidth*0.12+70);
+
+textSize(mobile?14:20);
+text("p5.js is a JavaScript library for creative coding!\nMake a fun, interactive game with graphics!!",width/6,logoY+imageWidth*0.12+118,2*width/3);
+textFont("Inconsolata");
+drawButton("browse some functions",width/2,buttonsY,220,36);
+drawButton("RSVP",width/2,buttonsY+48,100,36);
+
+noStroke();
+rectMode(CENTER);
+fill(100,200,0);
+circle(width/2-72,shapesY,36);
+fill(10,20,130);
+rect(width/2,shapesY,36,36);
+fill(140,20,20);
+triangle(width/2+57,shapesY+18,width/2+93,shapesY+18,width/2+75,shapesY-18);
+
+fill(255);
+textFont("Mansalva");
+textSize(12);
+textAlign(CENTER,CENTER);
+textFont("Inconsolata");
+text("circle();",width/2-72,shapesY+32);
+text("rect();",width/2,shapesY+32);
+text("triangle();",width/2+75,shapesY+32);
+
+rectMode(CORNER);
+stroke(255);
+strokeWeight(2);
+fill("#ff1b00");
+rect(panelX,exampleY,panelW,exampleHeight);
+
+noStroke();
+fill(255);
+textFont("Mansalva");
+textAlign(LEFT,CENTER);
+textSize(mobile?24:30);
+text("here is a sample program!",panelX+18,exampleY+28);
+
+textFont("Inconsolata");
+textAlign(LEFT,TOP);
+textSize(mobile?12:13);
+
+for(let i=0;i<exampleLines.length;i++){
+fill(255);
+text(exampleLines[i],panelX+20,exampleY+62+i*18);
+}
+
+textFont("Inconsolata");
+const preview=homePreviewBounds();
+drawExamplePreview(preview.x,preview.y,preview.w,preview.h);
+
+fill(255);
+textFont("Mansalva");
+textSize(mobile?12:14);
+textAlign(CENTER,CENTER);
+text("YSWS Draft by @ninew • Looking for a sponsor!",width/6,footerY,2*width/3);
+
+pop();
+drawHomeScrollbar();
+}
+
+function drawExamplePreview(x,y,w,h){
+const screenY=y-homeScroll;
+
+rectMode(CORNER);
+noStroke();
+fill("#ff0000");
+rect(x,y,w,h);
+
+stroke(255);
+strokeWeight(1);
+noFill();
+rect(x,y,w,h);
+
+previewBallX+=previewSpeedX;
+previewBallY+=previewSpeedY;
+
+if(previewBallX>w-18||previewBallX<18){
+previewSpeedX*=-1;
+previewBallX=constrain(previewBallX,18,w-18);
+}
+
+if(previewBallY>h-18||previewBallY<18){
+previewSpeedY*=-1;
+previewBallY=constrain(previewBallY,18,h-18);
+}
+
+noStroke();
+fill(previewBallColor);
+circle(x+previewBallX,y+previewBallY,36);
+}
+
+function drawHomeScrollbar(){
+if(homeContentHeight<=height)return;
+const trackTop=8;
+const trackHeight=height-16;
+const thumbHeight=Math.max(32,trackHeight*(height/homeContentHeight));
+const thumbY=trackTop+(homeScroll/Math.max(1,homeContentHeight-height))*(trackHeight-thumbHeight);
+noStroke();
+fill(255);
+rectMode(CORNER);
+rect(width-8,thumbY,4,thumbHeight);
+}
+
+function buildGuideLayout(){
+if(guideLayoutWidth===width)return;
+guideLayoutWidth=width;
+guideLayout=[];
+const mobile=width<600;
+const panelX=mobile?10:20;
+const padding=mobile?20:28;
+const innerW=width-panelX*2-padding*2;
+let y=0;
+textFont("Inconsolata");
+for(const paragraph of guideText.split("\n")){
+if(!paragraph.trim()){
+y+=16;
+continue;
+}
+const title=paragraph==="What is p5.js?";
+const size=title?Math.min(mobile?42:58,width*0.1):18;
+const lineHeight=title?size:27;
+for(const line of wrapText(paragraph,innerW,size)){
+guideLayout.push({text:line,y,size});
+y+=lineHeight;
+}
+if(title)y+=12;
+}
+guideContentHeight=y;
+}
+
+function drawGuide(){
+const mobile=width<600;
+const panelX=mobile?10:20;
+const panelY=mobile?72:76;
+const panelW=width-panelX*2;
+const panelH=height-panelY-panelX;
+const padding=mobile?20:28;
+buildGuideLayout();
+fill("#ff0000");
+stroke(255);
+strokeWeight(4);
+rectMode(CORNER);
+rect(panelX,panelY,panelW,panelH);
+drawingContext.save();
+drawingContext.beginPath();
+drawingContext.rect(panelX+4,panelY+4,panelW-8,panelH-8);
+drawingContext.clip();
+noStroke();
+textFont("Inconsolata");
+textAlign(LEFT,TOP);
+for(const row of guideLayout){
+const y=panelY+padding+row.y-guideScroll;
+if(y>-30&&y<height-padding){
+fill(255);
+textSize(row.size);
+textStyle(NORMAL);
+text(row.text,panelX+padding,y);
+}
+}
+drawingContext.restore();
+
+if(guideContentHeight>panelH-padding*2){
+const thumbHeight=Math.min(panelH-16,Math.max(24,(panelH-16)*(panelH/guideContentHeight)));
+const thumbY=panelY+8+(guideScroll/Math.max(1,guideContentHeight-(panelH-padding*2)))*((panelH-16)-thumbHeight);
+noStroke();
+fill(255);
+rectMode(CORNER);
+rect(panelX+panelW-8,thumbY,4,thumbHeight);
+}
+
+drawButton("back",width-55,32,82,36);
+}
+
+function draw(){
+drawBackground();
+if(showGuide){
+drawGuide();
+}else{
+drawHome();
+}
+
+const onBackButton=mouseX>=width-96&&mouseX<=width-14&&mouseY>=14&&mouseY<=50;
+const pointerY=mouseY+homeScroll;
+const buttonsY=homeButtonsY();
+const onBrowseButton=mouseX>=width/2-110&&mouseX<=width/2+110&&pointerY>=buttonsY-18&&pointerY<=buttonsY+18;
+const onRsvpButton=mouseX>=width/2-50&&mouseX<=width/2+50&&pointerY>=buttonsY+30&&pointerY<=buttonsY+66;
+const onScrollbar=!showGuide&&homeContentHeight>height&&mouseX>=width-12&&mouseX<=width&&mouseY>=8&&mouseY<=height-8;
+cursor((showGuide&&onBackButton)||(!showGuide&&(onBrowseButton||onRsvpButton||onScrollbar))?"pointer":"default");
+}
+
+function mousePressed(){
+if(showGuide){
+if(mouseX>=width-96&&mouseX<=width-14&&mouseY>=14&&mouseY<=50){
+showGuide=false;
+guideScroll=0;
+}
+return;
+}
+
+if(homeContentHeight>height&&mouseX>=width-12&&mouseX<=width){
+const trackHeight=height-16;
+const thumbHeight=Math.max(32,trackHeight*(height/homeContentHeight));
+const thumbY=8+(homeScroll/Math.max(1,homeContentHeight-height))*(trackHeight-thumbHeight);
+draggingScrollbar=true;
+scrollbarDragOffset=mouseY>=thumbY&&mouseY<=thumbY+thumbHeight?mouseY-thumbY:thumbHeight/2;
+return;
+}
+
+const preview=homePreviewBounds();
+if(mouseX>=preview.x&&mouseX<=preview.x+preview.w&&mouseY+homeScroll>=preview.y&&mouseY+homeScroll<=preview.y+preview.h){
+previewBallColor=color(random(255),random(255),random(255));
+return;
+}
+
+const pointerY=mouseY+homeScroll;
+const buttonsY=homeButtonsY();
+if(mouseX>=width/2-110&&mouseX<=width/2+110&&pointerY>=buttonsY-18&&pointerY<=buttonsY+18){
+showGuide=true;
+guideScroll=0;
+}else if(mouseX>=width/2-50&&mouseX<=width/2+50&&pointerY>=buttonsY+30&&pointerY<=buttonsY+66){
+window.open("https://rsvp.soon.it/shapes","_blank","noopener,noreferrer");
+}
+}
+
+function mouseDragged(){
+if(!draggingScrollbar)return;
+const trackHeight=height-16;
+const thumbHeight=Math.max(32,trackHeight*(height/homeContentHeight));
+const thumbTravel=trackHeight-thumbHeight;
+const thumbY=constrain(mouseY-scrollbarDragOffset,8,8+thumbTravel);
+homeScroll=map(thumbY,8,8+thumbTravel,0,Math.max(0,homeContentHeight-height));
+}
+
+function mouseReleased(){
+draggingScrollbar=false;
+}
+
+function mouseWheel(event){
+if(showGuide){
+const panelX=width<600?10:20;
+const panelY=width<600?72:76;
+if(mouseX>=panelX&&mouseX<=width-panelX&&mouseY>=panelY&&mouseY<=height-panelX){
+const padding=width<600?20:28;
+const panelHeight=height-panelY-panelX;
+guideScroll=constrain(guideScroll+event.delta,0,Math.max(0,guideContentHeight-(panelHeight-padding*2)));
+return false;
+}
+}else{
+homeScroll=constrain(homeScroll+event.delta,0,Math.max(0,homeContentHeight-height));
+return false;
+}
+}
+
+function windowResized(){
+resizeCanvas(windowWidth,windowHeight);
+guideLayoutWidth=0;
+guideScroll=0;
+homeScroll=0;
+}
+</script>
+</body>
+</html>
